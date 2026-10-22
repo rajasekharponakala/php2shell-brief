@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PHP2Shell — CVE-2026-109618 and CVE-2026-109619: what happened and what to do</title>
+<meta name="description" content="A sourced brief on the critical PHP core remote-code-execution vulnerabilities CVE-2026-109618 and CVE-2026-109619: root cause, affected versions, exploitation status, interim mitigations and hunting signals.">
+<meta name="color-scheme" content="dark">
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0d10'/%3E%3Cpath d='M8 22V10h7a6 6 0 0 1 0 12h-3' stroke='%23ff4d3d' stroke-width='2.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="masthead">
+  <div class="masthead__inner">
+    <p class="masthead__label">Security brief</p>
+    <h1 class="masthead__title">PHP2Shell</h1>
+    <p class="masthead__lede">
+      Two critical, unauthenticated remote-code-execution flaws in the PHP engine itself.
+      PHP runs about 70% of the web, including WordPress, Wikipedia and Drupal.
+      Patches shipped 21 October 2026. This is what happened and what to do.
+    </p>
+    <p class="masthead__meta">
+      <span class="chips" data-status-severity>status unavailable</span>
+      <span class="stamp" data-status-timestamp>loading</span>
+    </p>
+    <p class="masthead__cta">
+      <a class="button" href="https://www.php.net/archive/2026.php#2026-10-21-5" rel="noopener noreferrer">Read the PHP advisory</a>
+      <a class="button button--ghost" href="#do-now">Jump to what to do now</a>
+    </p>
+    <p class="masthead__fixed">
+      Fixed in <span class="mono">8.5.12</span>, <span class="mono">8.4.27</span>,
+      <span class="mono">8.3.36</span>, <span class="mono">8.2.35</span>
+    </p>
+  </div>
+</header>
+
+<nav class="nav" aria-label="Sections">
+  <div class="nav__inner">
+    <ol class="nav__list">
+      <li><a href="#status">Status</a></li>
+      <li><a href="#root-cause">Root cause</a></li>
+      <li><a href="#impact">Impact</a></li>
+      <li><a href="#versions">Versions</a></li>
+      <li><a href="#do-now">Do this now</a></li>
+      <li><a href="#mitigations">Mitigations</a></li>
+      <li><a href="#hunting">Hunting</a></li>
+      <li><a href="#timeline">Timeline</a></li>
+      <li><a href="#ai-inflection">AI</a></li>
+      <li><a href="#disclosure">Disclosure</a></li>
+      <li><a href="#sources">Sources</a></li>
+    </ol>
+  </div>
+</nav>
+
+<main id="main">
+  <section id="status" class="section">
+    <h2 class="section__title">Status right now</h2>
+    <div data-status-exploitation></div>
+    <h3>Services taken offline</h3>
+    <div data-status-offline></div>
+    <h3>Official advisories</h3>
+    <div data-status-advisories></div>
+  </section>
+
+  <section id="root-cause" class="section">
+    <h2 class="section__title">Root cause</h2>
+  </section>
+
+  <section id="impact" class="section">
+    <h2 class="section__title">Impact</h2>
+  </section>
+
+  <section id="versions" class="section">
+    <h2 class="section__title">Which versions are affected</h2>
+    <div data-status-versions></div>
+  </section>
+
+  <section id="do-now" class="section">
+    <h2 class="section__title">Do this now</h2>
+  </section>
+
+  <section id="mitigations" class="section">
+    <h2 class="section__title">Interim mitigations</h2>
+  </section>
+
+  <section id="hunting" class="section">
+    <h2 class="section__title">What to hunt for</h2>
+  </section>
+
+  <section id="timeline" class="section">
+    <h2 class="section__title">Timeline</h2>
+    <div data-status-timeline></div>
+  </section>
+
+  <section id="ai-inflection" class="section">
+    <h2 class="section__title">The AI inflection point</h2>
+  </section>
+
+  <section id="disclosure" class="section">
+    <h2 class="section__title">How the disclosure went</h2>
+  </section>
+
+  <section id="sources" class="section">
+    <h2 class="section__title">Sources</h2>
+  </section>
+</main>
+
+<footer class="footer">
+  <p>This page is a secondary summary assembled from public sources. It is not authoritative:
+     the PHP security advisory and the national CERT advisories are. Verify before acting.</p>
+  <p>Content licensed MIT. Built as a static GitHub Pages site.</p>
+</footer>
+
+<script src="main.js"></script>
+</body>
+</html>

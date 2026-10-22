@@ -107,6 +107,16 @@ def check_renderer():
             fail(f"main.js does not read status.json key: {key}")
 
 
+def check_hooks():
+    """Render hooks must exist in the markup, whatever else is missing."""
+    html = INDEX.read_text() if INDEX.exists() else ""
+    for hook in ("data-status-timestamp", "data-status-severity", "data-status-versions",
+                 "data-status-exploitation", "data-status-offline", "data-status-advisories",
+                 "data-status-timeline"):
+        if hook not in html:
+            fail(f"index.html missing render hook: {hook}")
+
+
 def check_markup(collector):
     for section in REQUIRED_SECTIONS:
         if section not in collector.ids:
@@ -166,6 +176,7 @@ def main():
     check_files()
     check_status()
     check_renderer()
+    check_hooks()
     collector = Collector()
     if INDEX.exists():
         collector.feed(INDEX.read_text())
