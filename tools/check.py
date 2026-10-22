@@ -96,6 +96,17 @@ def check_status():
     return data
 
 
+def check_renderer():
+    served = ROOT / "main.js"
+    if not served.exists():
+        fail("main.js is missing, cannot verify it reads data/status.json")
+        return
+    source = served.read_text()
+    for key in ("lastUpdated", "fixedVersions", "exploitation", "advisories", "timeline"):
+        if key not in source:
+            fail(f"main.js does not read status.json key: {key}")
+
+
 def check_markup(collector):
     for section in REQUIRED_SECTIONS:
         if section not in collector.ids:
@@ -154,6 +165,7 @@ def main():
 
     check_files()
     check_status()
+    check_renderer()
     collector = Collector()
     if INDEX.exists():
         collector.feed(INDEX.read_text())

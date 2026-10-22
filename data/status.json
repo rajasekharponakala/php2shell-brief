@@ -1,0 +1,70 @@
+{
+  "lastUpdated": "2026-10-22T00:00:00Z",
+  "severity": "Critical",
+  "cvss": "9.2",
+  "cvssVector": "CVSS v4.0",
+  "affectedFrom": "5.4",
+  "fixedVersions": [
+    {"branch": "8.5", "version": "8.5.12", "eol": "not scheduled"},
+    {"branch": "8.4", "version": "8.4.27", "eol": "not scheduled"},
+    {"branch": "8.3", "version": "8.3.36", "eol": "not scheduled"},
+    {"branch": "8.2", "version": "8.2.35", "eol": "2026-12-31"}
+  ],
+  "cves": [
+    {
+      "id": "CVE-2026-109618",
+      "name": "RCE via OOM corruption",
+      "ghsa": "GHSA-w8hw-w9fx-j79w",
+      "summary": "An out-of-memory failure can interrupt PHP while request data is only partly initialised. Request cleanup then treats the invalid data as valid, corrupting memory."
+    },
+    {
+      "id": "CVE-2026-109619",
+      "name": "RCE via stale global state",
+      "ghsa": "GHSA-6wmf-4rv5-p3rp",
+      "summary": "Request-owned internal state can survive after its backing memory has been freed. A later request on the same worker may use that stale state before normal initialisation resets it."
+    }
+  ],
+  "exploitation": {
+    "observed": true,
+    "summary": "Attempts confirmed by watchTowr, Cloudflare and Amazon; CISA had not observed exploitation when it published its alert.",
+    "events": [
+      {"when": "2026-10-17", "what": "Amazon reports exploit attempts against its properties, four days before public disclosure.", "source": "https://www.sophos.com/en-us/security-advisories/sophos-sa-20261021-php2shell"},
+      {"when": "2026-10-20", "what": "CVE identifiers and a proof-of-concept tool circulate publicly before the coordinated disclosure.", "source": "https://watchtowr.com/intelligence/php-remote-code-execution-php2shell/"},
+      {"when": "2026-10-21", "what": "Cloudflare sees thousands of attempts in the ten hours before the announcement, tens of thousands within 45 minutes after, hundreds of thousands within two hours, and millions from there on.", "source": "https://www.bbc.com/news/articles/c3qjnwye0ep5o"}
+    ]
+  },
+  "offlineServices": [
+    {"who": "BBC", "what": "Took sites offline as a precaution.", "source": "https://www.bbc.com/news/articles/c3qjnwye0ep5o"},
+    {"who": "Wikimedia (Wikipedia)", "what": "Took a number of systems offline as a precaution.", "source": "https://www.bbc.com/news/articles/c3qjnwye0ep5o"},
+    {"who": "Finnish government", "what": "Sites and pages taken offline.", "source": "https://www.bbc.com/news/articles/c3qjnwye0ep5o"},
+    {"who": "Edinburgh council", "what": "Site taken offline.", "source": "https://www.bbc.com/news/articles/c3qjnwye0ep5o"},
+    {"who": "Netherlands NCSC", "what": "Pulled its website.", "source": "https://www.bbc.com/news/articles/c3qjnwye0ep5o"},
+    {"who": "Scottish councils and health boards", "what": "Public sites taken offline.", "source": "https://www.bbc.com/news/articles/c3qjnwye0ep5o"},
+    {"who": "University of Geneva", "what": "Website taken offline after a call from CERT-EU.", "source": "https://www.bbc.com/news/articles/c3qjnwye0ep5o"},
+    {"who": "Moodle", "what": "Took its public-facing sites offline as a precaution.", "source": "https://www.facebook.com/moodle/posts/a-precautionary-measure-in-response-to-the-php2shell-vulnerability-which-was-/1571864764968591/"}
+  ],
+  "advisories": [
+    {"who": "PHP", "level": "Advisory", "url": "https://www.php.net/archive/2026.php#2026-10-21-5"},
+    {"who": "PHP Foundation", "level": "Post-mortem", "url": "https://thephp.foundation/blog/2026/10/21/todays-php-security-release-and-how-were-strengthening-php-security/"},
+    {"who": "UK NCSC", "level": "Alert", "url": "https://www.ncsc.gov.uk/news/critical-security-issue-affecting-php"},
+    {"who": "US CISA", "level": "Alert", "url": "https://www.cisa.gov/news-events/alerts/2026/10/21/critical-vulnerabilities-php-require-immediate-patching"},
+    {"who": "Wiz Research", "level": "Technical report", "url": "https://www.wiz.io/blog/php2shell-php-rce"},
+    {"who": "Calif Research", "level": "Technical report", "url": "https://calif.io/php2shell/"},
+    {"who": "OpenAI", "level": "Response framework", "url": "https://openai.com/index/coordinated-disclosure-of-critical-vulnerabilities"},
+    {"who": "Cloudflare", "level": "WAF guidance", "url": "https://blog.cloudflare.com/php-vulnerabilities-waf-protection/"},
+    {"who": "watchTowr", "level": "Threat intel", "url": "https://watchtowr.com/intelligence/php-remote-code-execution-php2shell/"},
+    {"who": "BBC News", "level": "Reporting", "url": "https://www.bbc.com/news/articles/c3qjnwye0ep5o"}
+  ],
+  "timeline": [
+    {"when": "2004", "what": "Stefan Esser finds the first PHP memory-limit remote vulnerability; commercial firms build non-public exploits."},
+    {"when": "2020", "what": "PHP bug #78876 reports that long multipart variables cause an out-of-memory condition and leaked temp files."},
+    {"when": "2024", "what": "An OSTIF-funded Quarkslab audit rediscovers the same out-of-memory problem. Exploitation is theorised but not proven, so it is not fixed."},
+    {"when": "2026-08-01", "what": "Calif finds multiple paths to remote code execution and reports the first bug to PHP on 11 August."},
+    {"when": "2026-08-19", "what": "Wiz Research independently discovers the first vulnerability and reports it on 24 August."},
+    {"when": "2026-08-21", "what": "Calif reports the second bug to PHP; PHP confirms the proof of concept on 15 August."},
+    {"when": "2026-09-21", "what": "PHP acknowledges the reports and starts building a coordinated fix."},
+    {"when": "2026-10-20", "what": "The CVE identifiers leak publicly with a wrong release time and a wrong score of 10.0. PHP pulls its pre-announcement forward to 19:30 UTC."},
+    {"when": "2026-10-21", "what": "Patched releases ship for 8.2, 8.3, 8.4 and 8.5. The public advisory follows, and exploit attempts surge."},
+    {"when": "2026-10-22", "what": "Patch waves continue across hosting providers and government. Security agencies keep urging operators to patch or go offline."}
+  ]
+}
