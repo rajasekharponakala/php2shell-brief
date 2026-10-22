@@ -136,6 +136,14 @@ def check_markup(collector):
             json.loads(STATUS.read_text()) if STATUS.exists() else {}
         ):
             fail(f"fixed version {version} appears nowhere on the page or in status.json")
+    required_phrases = [
+        "memory_limit", "post_max_size", "session.upload_progress.enabled",
+        "fatal_error_backtraces", "PHPSESSID", "mod_php", "PHP-FPM",
+        "restart every worker", "RLIMIT_AS",
+    ]
+    for phrase in required_phrases:
+        if phrase not in body:
+            fail(f"index.html missing required phrase: {phrase}")
     external = [
         link for link in collector.links
         if link.startswith("http://") or link.startswith("https://")

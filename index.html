@@ -66,27 +66,237 @@
 
   <section id="root-cause" class="section">
     <h2 class="section__title">Root cause</h2>
+    <p class="lead">Both flaws have the same shape: PHP frees a request's memory while
+      internal bookkeeping still points into it, and the next request on that worker
+      reads the freed memory as if it were live.</p>
+    <p>PHP allocates memory for each request and releases it when the request ends.
+      If the request dies unexpectedly — a fatal error, or an allocation that hits
+      <span class="mono">memory_limit</span> — the cleanup path can run with half-built
+      or already-freed data. The worker process survives. Its globals still reference
+      memory that no longer exists. The next request handled by that worker can consume
+      the stale state, which an attacker can steer into controlled memory corruption or
+      into a leak of live process memory.</p>
+    <p>The two CVEs are two different points where this can happen:</p>
+    <ul>
+      <li><strong>CVE-2026-109618 — RCE via OOM corruption.</strong> An out-of-memory
+        failure interrupts PHP while request data is only partly initialised. Request
+        cleanup then treats the invalid data as valid.</li>
+      <li><strong>CVE-2026-109619 — RCE via stale global state.</strong> A fatal error
+        leaves request-owned internal state pointing at memory that was freed when the
+        request ended. A later request on the same worker uses that stale state before
+        normal initialisation resets it.</li>
+    </ul>
+    <p>Which SAPI you run decides how easy the second step is. On Apache with
+      <span class="mono">mod_php</span>, a fatal error during request startup still
+      runs request cleanup and the worker is reused, so the stale state is reachable on
+      the next request. On PHP-FPM, a failure during startup terminates the worker
+      instead, so the path that matters is a fatal error after startup succeeded —
+      reached through the Session upload-progress feature, which is enabled by
+      default.</p>
+    <figure class="figure">
+      <svg viewBox="0 0 880 260" role="img" aria-labelledby="rc-title rc-desc" xmlns="http://www.w3.org/2000/svg">
+        <title id="rc-title">How the stale state is reached</title>
+        <desc id="rc-desc">Request A hits a fatal error, the request heap is freed while globals still point into it, the worker survives, and request B on the same worker consumes the freed memory.</desc>
+        <defs>
+          <marker id="rc-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="#6b7682"/>
+          </marker>
+        </defs>
+        <g font-family="ui-monospace, Menlo, monospace" font-size="13">
+          <rect x="16" y="90" width="180" height="80" rx="6" fill="#12161b" stroke="#232a32"/>
+          <text x="32" y="120" fill="#e8eaed">Request A</text>
+          <text x="32" y="142" fill="#9aa4b0">fatal error</text>
+          <text x="32" y="160" fill="#9aa4b0">(OOM or fatal)</text>
+
+          <rect x="250" y="90" width="180" height="80" rx="6" fill="#12161b" stroke="#232a32"/>
+          <text x="266" y="120" fill="#e8eaed">Request heap</text>
+          <text x="266" y="142" fill="#ff4d3d">freed</text>
+          <text x="266" y="160" fill="#9aa4b0">globals still point in</text>
+
+          <rect x="484" y="90" width="180" height="80" rx="6" fill="#12161b" stroke="#232a32"/>
+          <text x="500" y="120" fill="#e8eaed">Worker survives</text>
+          <text x="500" y="142" fill="#9aa4b0">stale globals kept</text>
+          <text x="500" y="160" fill="#9aa4b0">next request reuses it</text>
+
+          <rect x="718" y="90" width="146" height="80" rx="6" fill="#1a0f0d" stroke="#ff4d3d"/>
+          <text x="734" y="120" fill="#ffb3aa">Request B</text>
+          <text x="734" y="142" fill="#ffb3aa">reads freed memory</text>
+          <text x="734" y="160" fill="#9aa4b0">RCE or leak</text>
+
+          <line x1="196" y1="130" x2="242" y2="130" stroke="#6b7682" stroke-width="1.5" marker-end="url(#rc-arrow)"/>
+          <line x1="430" y1="130" x2="476" y2="130" stroke="#6b7682" stroke-width="1.5" marker-end="url(#rc-arrow)"/>
+          <line x1="664" y1="130" x2="710" y2="130" stroke="#6b7682" stroke-width="1.5" marker-end="url(#rc-arrow)"/>
+        </g>
+      </svg>
+      <figcaption>The shared shape of both vulnerabilities. The specific interruption
+        points differ, and so does reachability between SAPI modes.</figcaption>
+    </figure>
   </section>
 
   <section id="impact" class="section">
     <h2 class="section__title">Impact</h2>
+    <p class="lead">Unauthenticated remote code execution, and a separate path to reading
+      live process memory. The bug is in the PHP engine, not in your application
+      code.</p>
+    <p>Exploitation does not need an account, a session, or a flaw in the CMS on top. A
+      "Hello World" page on an affected PHP version is enough. The researchers
+      demonstrated pre-authentication remote code execution against WordPress, Drupal,
+      Joomla, MediaWiki, Roundcube, Magento, phpMyAdmin, Nextcloud, Laravel, Symfony and
+      WHMCS, and against plain PHP scripts.</p>
+    <p>Separately, they showed that an attacker can read live worker memory without
+      achieving code execution at all. PHP parses multipart requests before normal
+      initialisation finishes, so an attacker can make freed heap contents get
+      URL-encoded into an oversized or malformed <span class="mono">PHPSESSID</span>
+      response cookie. That memory can hold passwords, session tokens, API keys and
+      certificates belonging to other users' requests or to the server itself.</p>
+    <p>Risk is highest on Apache with <span class="mono">mod_php</span>, where an
+      unauthenticated request can trigger the attack before any application code runs.
+      Every SAPI that serves web requests is in scope: PHP-FPM,
+      <span class="mono">mod_php</span>, <span class="mono">php-cgi</span>,
+      FrankenPHP and LiteSpeed.</p>
   </section>
 
   <section id="versions" class="section">
     <h2 class="section__title">Which versions are affected</h2>
+    <p class="lead">Every PHP version from 5.4 onwards is affected by at least one of the
+      two flaws. Patches exist for the four supported branches.</p>
     <div data-status-versions></div>
+    <p>PHP 8.1 and older no longer receive updates from the PHP project. Some
+      distributions and LTS vendors provide backported fixes — check yours. The PHP
+      security team also published minimal source backports for the 7.4, 8.0 and 8.1
+      branches, for people building from source or without an LTS vendor.</p>
+    <p>Linux distributions and LTS vendors received the patches before the public
+      release, so the update is usually a normal package upgrade. The volunteer
+      <span class="mono">rpms.remirepo.net</span> repository was not updated: move to
+      distribution packages or build from source. PHP 8.2 reaches end of life on
+      31 December 2026 and takes no further security fixes after that, so plan the
+      upgrade to a supported branch.</p>
   </section>
 
   <section id="do-now" class="section">
     <h2 class="section__title">Do this now</h2>
+    <p class="lead">Updating is the only complete fix. Everything else buys time or adds
+      defence in depth.</p>
+
+    <h3>If you own a website and do not run the server</h3>
+    <ol class="steps">
+      <li><strong>Ask whoever hosts it whether the PHP security update is applied.</strong>
+        The fix must land on PHP itself. Updating WordPress, a theme or a plugin does
+        not fix it.</li>
+      <li><strong>If the answer is no, or the answer takes more than a day, ask for the
+        site to be taken offline</strong> until it can be patched. Several public bodies
+        did exactly this.</li>
+      <li><strong>Watch for security messages</strong> from services you use, and treat
+        any "change your password" request that arrives with the publicity around this
+        incident with suspicion. Phishing campaigns ride on headlines like this one.</li>
+    </ol>
+
+    <h3>If you run servers</h3>
+    <ol class="steps">
+      <li><strong>Inventory every PHP installation</strong>, internet-facing first. PHP is
+        often bundled inside appliances and vendor images, and prevalence is not
+        directly observable from the application layer. Do not limit discovery to
+        outdated versions: all versions may be affected.</li>
+      <li><strong>Update to the fixed release for your branch</strong> — 8.5.12, 8.4.27,
+        8.3.36 or 8.2.35.</li>
+      <li><strong>Restart every PHP worker</strong> after the update, so the fix is
+        actually live in every process.</li>
+      <li><strong>Preserve logs and configuration snapshots before you change anything,</strong>
+        then look for evidence of compromise: web shells, new cron entries, new
+        accounts, PHP workers launching shells or downloading tools.</li>
+      <li><strong>Restrict internet access to PHP systems</strong> that could not be
+        patched in time.</li>
+      <li><strong>Keep WAF rules as defence in depth.</strong> Cloudflare shipped managed
+        rules for both CVEs to all customers including the free tier, several hours
+        before disclosure. A WAF reduces exposure; it does not replace the patch.</li>
+    </ol>
+
+    <h3>If you are a hosting or platform provider</h3>
+    <ol class="steps">
+      <li><strong>Ship the patched packages</strong> to every customer image and let
+        them upgrade, and tell them clearly which versions are fixed.</li>
+      <li><strong>Offer a documented mitigation path</strong> for customers who cannot
+        upgrade immediately, and be explicit about what it does and does not stop.</li>
+      <li><strong>Publish an inventory of affected products</strong> so downstream
+        operators can find what they are running.</li>
+    </ol>
   </section>
 
   <section id="mitigations" class="section">
     <h2 class="section__title">Interim mitigations</h2>
+    <p class="note">These reduce exposure to specific attack paths. They do not make an
+      installation safe, and PHP says updating is the only complete solution.</p>
+
+    <h3>For CVE-2026-109618, RCE via OOM corruption</h3>
+    <ul>
+      <li>Set <span class="mono">memory_limit=-1</span>, in a way applications cannot
+        override, such as <span class="mono">php_admin_value</span> in the FPM pool or
+        the Apache configuration. Check that no pool, directory or application setting
+        puts a finite limit back. This removes the controllable memory-limit failure,
+        but an underlying allocation failure can still reach the vulnerable path.</li>
+      <li>Set a low <span class="mono">post_max_size</span> — 8M for applications that
+        do not need uploads, 32M when uploads are required. Keep
+        <span class="mono">upload_max_filesize</span> below it. Enforce limits for
+        decoded request size, field count, multipart part count, header count and
+        nesting depth at the web server or proxy, including for requests without a
+        usable <span class="mono">Content-Length</span>.</li>
+      <li>Use a container or cgroup limit as an availability boundary, with a policy
+        that kills only the affected worker. Do not substitute
+        <span class="mono">RLIMIT_AS</span> or <span class="mono">RLIMIT_DATA</span>:
+        they can trigger the vulnerable allocation failure.</li>
+    </ul>
+
+    <h3>For CVE-2026-109619, RCE via stale global state</h3>
+    <ul>
+      <li>Set <span class="mono">session.upload_progress.enabled=0</span> and restart
+        every worker. Apply it in <span class="mono">php.ini</span>, the FPM pool or
+        server configuration, so it applies before request parsing. Do not rely on
+        <span class="mono">ini_set()</span> or a per-directory
+        <span class="mono">.user.ini</span>. This blocks the confirmed session paths,
+        not other variants.</li>
+      <li>On PHP 8.5, set <span class="mono">fatal_error_backtraces=0</span> and restart
+        every worker. This blocks the confirmed fatal backtrace path only.</li>
+      <li>Remove invalid or deprecated per-request settings that emit diagnostics before
+        initialisation. Hiding diagnostics with
+        <span class="mono">error_reporting</span>,
+        <span class="mono">display_errors</span> or <span class="mono">@</span> does not
+        help.</li>
+      <li>Fix attacker-reachable fatal errors and execution timeouts, including failures
+        in callbacks, upload or import processing and cleanup.</li>
+    </ul>
+
+    <h3>Worked example</h3>
+    <code class="code">; php.ini — FPM pool or server level, not .user.ini
+session.upload_progress.enabled = 0
+post_max_size = 8M
+upload_max_filesize = 2M
+memory_limit = -1
+
+; PHP 8.5 only
+fatal_error_backtraces = 0
+
+; then: restart every worker</code>
   </section>
 
   <section id="hunting" class="section">
     <h2 class="section__title">What to hunt for</h2>
+    <p class="lead">These bugs execute below the application layer, so application logs
+      may show very little context. Look one level lower.</p>
+    <ul>
+      <li>Unusual multipart requests followed by memory-limit errors or repeated
+        HTTP 500 responses.</li>
+      <li>Unexpectedly large or malformed <span class="mono">PHPSESSID</span> response
+        cookies — a normal session id is short, and this one is a leak of heap
+        contents.</li>
+      <li>Unexplained PHP worker churn: workers restarting or dying under load without
+        a matching traffic explanation.</li>
+      <li>PHP worker processes launching shells or downloading tools.</li>
+      <li>New web shells, unexpected cron jobs, and newly created accounts tied to PHP
+        processes.</li>
+    </ul>
+    <p>National agencies also ask operators to look for backdoors an attacker may have
+      installed, and to treat vendor advisories about appliances and services that bundle
+      PHP as part of the same patch wave.</p>
   </section>
 
   <section id="timeline" class="section">
