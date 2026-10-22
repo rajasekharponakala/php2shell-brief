@@ -20,7 +20,7 @@
     var stamp = document.querySelector("[data-status-timestamp]");
     if (!stamp) { return; }
     if (!data || !data.lastUpdated) {
-      stamp.textContent = "status unavailable";
+      stamp.textContent = "status data not loaded";
       stamp.classList.add("is-unavailable");
       return;
     }
