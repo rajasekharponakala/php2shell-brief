@@ -18,8 +18,9 @@
     <h1 class="masthead__title">PHP2Shell</h1>
     <p class="masthead__lede">
       Two critical, unauthenticated remote-code-execution flaws in the PHP engine itself.
-      PHP runs about 70% of the web, including WordPress, Wikipedia and Drupal.
-      Patches shipped 21 October 2026. This is what happened and what to do.
+      PHP powers <a href="https://www.wiz.io/blog/php2shell-php-rce" rel="noopener noreferrer">about
+      70% of the web</a>, including WordPress, Wikipedia and Drupal. Patches shipped
+      21 October 2026. This is what happened and what to do.
     </p>
     <p class="masthead__meta">
       <span class="chips" data-status-severity>status unavailable</span>
@@ -29,16 +30,20 @@
       <a class="button" href="https://www.php.net/archive/2026.php#2026-10-21-5" rel="noopener noreferrer">Read the PHP advisory</a>
       <a class="button button--ghost" href="#do-now">Jump to what to do now</a>
     </p>
-    <p class="masthead__fixed">
-      Fixed in <span class="mono">8.5.12</span>, <span class="mono">8.4.27</span>,
-      <span class="mono">8.3.36</span>, <span class="mono">8.2.35</span>
-    </p>
+    <p class="masthead__fixed">Fixed in <span data-status-fixed>the latest supported releases</span></p>
+
+    <noscript>
+      <p class="note">JavaScript is off, so the live status block cannot load. The facts as of
+        the last verification: severity Critical, CVSS v4.0 9.2. Fixed releases are PHP 8.5.12,
+        8.4.27, 8.3.36 and 8.2.35. Every PHP version from 5.4 onwards is affected.</p>
+    </noscript>
   </div>
 </header>
 
 <nav class="nav" aria-label="Sections">
   <div class="nav__inner">
-    <ol class="nav__list">
+    <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-list">Sections</button>
+    <ol class="nav__list" id="nav-list">
       <li><a href="#status">Status</a></li>
       <li><a href="#root-cause">Root cause</a></li>
       <li><a href="#impact">Impact</a></li>
@@ -57,11 +62,17 @@
 <main id="main">
   <section id="status" class="section">
     <h2 class="section__title">Status right now</h2>
-    <p class="lead">Both flaws are rated Critical, CVSS v4.0 9.2. The fix is out. What
-      remains is the patch wave, and the exploitation that followed the disclosure.</p>
+    <p class="lead">Both flaws are rated <span data-status-severity-line>Critical, CVSS v4.0 9.2</span>.
+      The fix is out. What remains is the patch wave, and the
+      exploitation attempts that followed the disclosure.</p>
+
+    <div class="tiles" data-status-tiles></div>
+
     <div data-status-exploitation></div>
+
     <h3>Services taken offline</h3>
     <div data-status-offline></div>
+
     <h3>Official advisories</h3>
     <div data-status-advisories></div>
   </section>
@@ -78,16 +89,21 @@
       memory that no longer exists. The next request handled by that worker can consume
       the stale state, which an attacker can steer into controlled memory corruption or
       into a leak of live process memory.</p>
-    <p>The two CVEs are two different points where this can happen:</p>
-    <ul>
-      <li><strong>CVE-2026-109618 — RCE via OOM corruption.</strong> An out-of-memory
-        failure interrupts PHP while request data is only partly initialised. Request
-        cleanup then treats the invalid data as valid.</li>
-      <li><strong>CVE-2026-109619 — RCE via stale global state.</strong> A fatal error
-        leaves request-owned internal state pointing at memory that was freed when the
-        request ended. A later request on the same worker uses that stale state before
-        normal initialisation resets it.</li>
-    </ul>
+
+    <div class="cves" data-status-cves></div>
+
+    <noscript>
+      <ul class="plain">
+        <li><strong>CVE-2026-109618 — RCE via OOM corruption.</strong> An out-of-memory
+          failure interrupts PHP while request data is only partly initialised. Request
+          cleanup then treats the invalid data as valid.</li>
+        <li><strong>CVE-2026-109619 — RCE via stale global state.</strong> A fatal error
+          leaves request-owned internal state pointing at memory that was freed when the
+          request ended. A later request on the same worker uses that stale state before
+          normal initialisation resets it.</li>
+      </ul>
+    </noscript>
+
     <p>Which SAPI you run decides how easy the second step is. On Apache with
       <span class="mono">mod_php</span>, a fatal error during request startup still
       runs request cleanup and the worker is reused, so the stale state is reachable on
@@ -95,13 +111,14 @@
       instead, so the path that matters is a fatal error after startup succeeded —
       reached through the Session upload-progress feature, which is enabled by
       default.</p>
-    <figure class="figure">
+
+    <figure class="figure figure--desktop">
       <svg viewBox="0 0 880 260" role="img" aria-labelledby="rc-title rc-desc" xmlns="http://www.w3.org/2000/svg">
         <title id="rc-title">How the stale state is reached</title>
         <desc id="rc-desc">Request A hits a fatal error, the request heap is freed while globals still point into it, the worker survives, and request B on the same worker consumes the freed memory.</desc>
         <defs>
           <marker id="rc-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-            <path d="M0 0 L10 5 L0 10 z" fill="#6b7682"/>
+            <path d="M0 0 L10 5 L0 10 z" fill="#7d8794"/>
           </marker>
         </defs>
         <g font-family="ui-monospace, Menlo, monospace" font-size="13">
@@ -125,13 +142,52 @@
           <text x="734" y="142" fill="#ffb3aa">reads freed memory</text>
           <text x="734" y="160" fill="#9aa4b0">RCE or leak</text>
 
-          <line x1="196" y1="130" x2="242" y2="130" stroke="#6b7682" stroke-width="1.5" marker-end="url(#rc-arrow)"/>
-          <line x1="430" y1="130" x2="476" y2="130" stroke="#6b7682" stroke-width="1.5" marker-end="url(#rc-arrow)"/>
-          <line x1="664" y1="130" x2="710" y2="130" stroke="#6b7682" stroke-width="1.5" marker-end="url(#rc-arrow)"/>
+          <line x1="196" y1="130" x2="242" y2="130" stroke="#7d8794" stroke-width="1.5" marker-end="url(#rc-arrow)"/>
+          <line x1="430" y1="130" x2="476" y2="130" stroke="#7d8794" stroke-width="1.5" marker-end="url(#rc-arrow)"/>
+          <line x1="664" y1="130" x2="710" y2="130" stroke="#7d8794" stroke-width="1.5" marker-end="url(#rc-arrow)"/>
         </g>
       </svg>
       <figcaption>The shared shape of both vulnerabilities. The specific interruption
         points differ, and so does reachability between SAPI modes.</figcaption>
+    </figure>
+
+    <figure class="figure figure--mobile">
+      <svg viewBox="0 0 320 470" role="img" aria-labelledby="rc-title-m rc-desc-m" xmlns="http://www.w3.org/2000/svg">
+        <title id="rc-title-m">How the stale state is reached</title>
+        <desc id="rc-desc-m">Request A hits a fatal error, the request heap is freed while globals still point into it, the worker survives, and request B on the same worker consumes the freed memory.</desc>
+        <defs>
+          <marker id="rc-arrow-m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="#7d8794"/>
+          </marker>
+        </defs>
+        <g font-family="ui-monospace, Menlo, monospace" font-size="12">
+          <rect x="20" y="10" width="280" height="72" rx="6" fill="#12161b" stroke="#232a32"/>
+          <text x="38" y="40" fill="#e8eaed">Request A</text>
+          <text x="38" y="62" fill="#9aa4b0">fatal error (OOM or fatal)</text>
+
+          <line x1="160" y1="82" x2="160" y2="106" stroke="#7d8794" stroke-width="1.5" marker-end="url(#rc-arrow-m)"/>
+
+          <rect x="20" y="108" width="280" height="72" rx="6" fill="#12161b" stroke="#232a32"/>
+          <text x="38" y="138" fill="#e8eaed">Request heap freed</text>
+          <text x="38" y="160" fill="#9aa4b0">globals still point into it</text>
+
+          <line x1="160" y1="180" x2="160" y2="204" stroke="#7d8794" stroke-width="1.5" marker-end="url(#rc-arrow-m)"/>
+
+          <rect x="20" y="206" width="280" height="72" rx="6" fill="#12161b" stroke="#232a32"/>
+          <text x="38" y="236" fill="#e8eaed">Worker survives</text>
+          <text x="38" y="258" fill="#9aa4b0">stale globals kept</text>
+
+          <line x1="160" y1="278" x2="160" y2="302" stroke="#7d8794" stroke-width="1.5" marker-end="url(#rc-arrow-m)"/>
+
+          <rect x="20" y="304" width="280" height="72" rx="6" fill="#1a0f0d" stroke="#ff4d3d"/>
+          <text x="38" y="334" fill="#ffb3aa">Request B reads freed memory</text>
+          <text x="38" y="356" fill="#9aa4b0">RCE or leak</text>
+
+          <text x="20" y="410" fill="#9aa4b0">The interruption points differ, and</text>
+          <text x="20" y="430" fill="#9aa4b0">so does reachability between</text>
+          <text x="20" y="450" fill="#9aa4b0">SAPI modes.</text>
+        </g>
+      </svg>
     </figure>
   </section>
 
@@ -185,12 +241,13 @@
       <li><strong>Ask whoever hosts it whether the PHP security update is applied.</strong>
         The fix must land on PHP itself. Updating WordPress, a theme or a plugin does
         not fix it.</li>
-      <li><strong>If the answer is no, or the answer takes more than a day, ask for the
-        site to be taken offline</strong> until it can be patched. Several public bodies
-        did exactly this.</li>
-      <li><strong>Watch for security messages</strong> from services you use, and treat
-        any "change your password" request that arrives with the publicity around this
-        incident with suspicion. Phishing campaigns ride on headlines like this one.</li>
+      <li><strong>If the answer is no, or the answer is unclear, ask for the site to be
+        taken offline</strong> until it can be patched. Several public bodies did
+        exactly this.</li>
+      <li><strong>Watch for security messages</strong> from services you use. Phishing
+        attempts often follow headlines like this one, so treat any "change your
+        password" request that arrives with the publicity around this incident with
+        suspicion.</li>
     </ol>
 
     <h3>If you run servers</h3>
@@ -199,8 +256,8 @@
         often bundled inside appliances and vendor images, and prevalence is not
         directly observable from the application layer. Do not limit discovery to
         outdated versions: all versions may be affected.</li>
-      <li><strong>Update to the fixed release for your branch</strong> — 8.5.12, 8.4.27,
-        8.3.36 or 8.2.35.</li>
+      <li><strong>Update to the fixed release for your branch</strong> —
+        <span data-status-fixed-inline>the patched releases</span>.</li>
       <li><strong>Restart every PHP worker</strong> after the update, so the fix is
         actually live in every process.</li>
       <li><strong>Preserve logs and configuration snapshots before you change anything,</strong>
@@ -209,8 +266,11 @@
       <li><strong>Restrict internet access to PHP systems</strong> that could not be
         patched in time.</li>
       <li><strong>Keep WAF rules as defence in depth.</strong> Cloudflare shipped managed
-        rules for both CVEs to all customers including the free tier, several hours
-        before disclosure. A WAF reduces exposure; it does not replace the patch.</li>
+        rules for both CVEs about nine hours before disclosure, with protection on by
+        default from 03:02 UTC on 21 October, including for free-plan customers.
+        Customers on Professional, Business and Enterprise plans must confirm their
+        Managed Ruleset is deployed in block mode. A WAF reduces exposure; it does not
+        replace the patch.</li>
     </ol>
 
     <h3>If you are a hosting or platform provider</h3>
@@ -220,7 +280,9 @@
       <li><strong>Offer a documented mitigation path</strong> for customers who cannot
         upgrade immediately, and be explicit about what it does and does not stop.</li>
       <li><strong>Publish an inventory of affected products</strong> so downstream
-        operators can find what they are running.</li>
+        operators can find what they are running — the
+        <a href="https://github.com/NCSC-NL/php2shell" rel="noopener noreferrer">NCSC-NL
+        product list</a> is a working model.</li>
     </ol>
   </section>
 
@@ -268,7 +330,8 @@
     </ul>
 
     <h3>Worked example</h3>
-    <code class="code" data-copy="session.upload_progress.enabled = 0
+    <div class="code-wrap">
+      <code class="code" data-copy="session.upload_progress.enabled = 0
 post_max_size = 8M
 upload_max_filesize = 2M
 memory_limit = -1
@@ -282,6 +345,7 @@ memory_limit = -1
 fatal_error_backtraces = 0
 
 ; then: restart every worker</code>
+    </div>
   </section>
 
   <section id="hunting" class="section">
@@ -330,12 +394,17 @@ fatal_error_backtraces = 0
       completed in a week what would previously have taken a world-class team months.
       Complexity, they argue, is no longer a meaningful barrier — which changes the
       practical economics of what counts as exploitable.</p>
+    <p>OpenAI calls the window between discovery and disclosure the
+      <a href="https://openai.com/index/coordinated-disclosure-of-critical-vulnerabilities" rel="noopener noreferrer">Defender's Window</a>:
+      the period in which maintainers and providers can prepare before the
+      details are public. They are funding
+      <a href="https://openai.com/index/coordinated-disclosure-of-critical-vulnerabilities" rel="noopener noreferrer">$1 billion in
+      subsidised access</a> to their Daybreak models for organisations with limited
+      security resources, and published a PHP version checker as a Codex skill.</p>
     <p>The same capabilities cut both ways. watchTowr reported active exploitation
       attempts against both CVEs, Cloudflare saw attempt volume climb into the
       millions within hours of disclosure, and OpenAI notes that the same tools help
-      attackers build offensive tooling rapidly. OpenAI is funding $1 billion in
-      subsidised access to its Daybreak models for organisations with limited security
-      resources, and published a PHP version checker as a Codex skill.</p>
+      attackers build offensive tooling rapidly.</p>
   </section>
 
   <section id="disclosure" class="section">
@@ -369,10 +438,12 @@ fatal_error_backtraces = 0
     <p>It has since built out: an Ecosystem Security Team in May 2026, an AI Security
       Engineer in Residence, dedicated triage and hardening hires through the summer,
       scans with Anthropic's Claude Mythos through Alpha-Omega, and OpenAI's Daybreak
-      Red for validating reports. The security team published 15 CVEs since 1 July and
-      worked through more than 100 reports that turned out to be invalid, duplicate or
-      not reproducible. The Foundation is now asking organisations that depend on PHP
-      to fund the security work that makes the next one of these finish sooner.</p>
+      Red for validating reports. The security team published
+      <a href="https://thephp.foundation/blog/2026/10/21/todays-php-security-release-and-how-were-strengthening-php-security/" rel="noopener noreferrer">15 CVEs
+      since 1 July</a> and worked through more than 100 reports that turned out to be
+      invalid, duplicate or not reproducible. The Foundation is now asking
+      organisations that depend on PHP to fund the security work that makes the next
+      one of these finish sooner.</p>
   </section>
 
   <section id="sources" class="section">
@@ -386,6 +457,7 @@ fatal_error_backtraces = 0
       <li><a href="https://thephp.foundation/blog/2026/10/21/todays-php-security-release-and-how-were-strengthening-php-security/" rel="noopener noreferrer">PHP Foundation: today's PHP security release</a> — the fix history, the disclosure leak, the security organisation rebuild.</li>
       <li><a href="https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w" rel="noopener noreferrer">php-src advisory GHSA-w8hw-w9fx-j79w (CVE-2026-109618)</a> and <a href="https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp" rel="noopener noreferrer">GHSA-6wmf-4rv5-p3rp (CVE-2026-109619)</a> — technical detail.</li>
       <li><a href="https://openai.com/index/coordinated-disclosure-of-critical-vulnerabilities" rel="noopener noreferrer">OpenAI: global response coordination</a> — the response framework, Daybreak funding, the Defender's Window framing, and the PHP version checker.</li>
+      <li><a href="https://github.com/NCSC-NL/php2shell" rel="noopener noreferrer">NCSC-NL: inventory of software with a vulnerable PHP dependency</a> — a working model for downstream product inventories.</li>
     </ul>
 
     <h3>Independent research</h3>
@@ -408,11 +480,13 @@ fatal_error_backtraces = 0
       <li><a href="https://www.bbc.com/news/articles/c3qjnwye0ep5o" rel="noopener noreferrer">BBC News: what is PHP and why did it spark a global cyber-security scramble?</a> — the global response, sites taken offline and the exploitation volume.</li>
       <li><a href="https://thehackernews.com/2026/10/someone-tried-to-exploit-php2shell-4.html" rel="noopener noreferrer">The Hacker News: someone tried to exploit PHP2Shell four days before disclosure</a> — Amazon's pre-disclosure exploitation attempt.</li>
       <li><a href="https://en.wikipedia.org/wiki/PHP2Shell" rel="noopener noreferrer">Wikipedia: PHP2Shell</a> — a live overview that tracks the situation further than this page does.</li>
+      <li><a href="https://www.facebook.com/moodle/posts/a-precautionary-measure-in-response-to-the-php2shell-vulnerability-which-was-/1571864764968591/" rel="noopener noreferrer">Moodle: a precautionary measure in response to the php2shell vulnerability</a> — Moodle's own announcement that it took its public sites offline.</li>
     </ul>
   </section>
 </main>
 
 <footer class="footer">
+  <p class="stamp" data-status-footer-timestamp>loading</p>
   <p>This page is a secondary summary assembled from public sources. It is not authoritative:
      the PHP security advisory and the national CERT advisories are. Verify before acting.</p>
   <p>Content licensed MIT. Built as a static GitHub Pages site.</p>

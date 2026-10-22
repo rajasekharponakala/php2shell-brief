@@ -12,7 +12,7 @@ pages may change afterwards.
 | [php-src advisory GHSA-w8hw-w9fx-j79w](https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w) | CVE-2026-109618 technical detail |
 | [php-src advisory GHSA-6wmf-4rv5-p3rp](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp) | CVE-2026-109619 technical detail |
 | [OpenAI: global response coordination](https://openai.com/index/coordinated-disclosure-of-critical-vulnerabilities) | Patch the Planet; $1 billion in subsidised Daybreak access for frontline defenders; the five-stage response framework; the Defender's Window framing; the PHP version checker released as a Codex skill |
-| [NCSC-NL product inventory](https://github.com/NCSC-NL/php2shell) | Downstream software with a vulnerable PHP dependency |
+| [NCSC-NL product inventory](https://github.com/NCSC-NL/php2shell) | Downstream software with a vulnerable PHP dependency; a working model for a provider-side product inventory |
 
 ## Independent research
 
@@ -35,8 +35,9 @@ pages may change afterwards.
 
 | Source | What it supports |
 | --- | --- |
-| [BBC News](https://www.bbc.com/news/articles/c3qjnwye0ep5o) | The global response; named sites taken offline; the Cloudflare attempt-volume escalation; Amazon's pre-disclosure attempts; the scale of affected sites |
-| [The Hacker News](https://thehackernews.com/2026/10/someone-tried-to-exploit-php2shell-4.html) | Amazon's exploitation attempt on 17 October 2026, four days before public disclosure |
+| [BBC News](https://www.bbc.com/news/articles/c3qjnwye0ep5o) | The global response; named sites taken offline; the Cloudflare attempt-volume escalation; Amazon's pre-disclosure attempts; the scale of affected sites. Its photo caption carries the University of Geneva detail about the CERT-EU call |
+| [The Hacker News](https://thehackernews.com/2026/10/someone-tried-to-exploit-php2shell-4.html) | Amazon's exploitation attempt on 17 October 2026, detected against its honeypot service, four days before public disclosure |
+| [Moodle](https://www.facebook.com/moodle/posts/a-precautionary-measure-in-response-to-the-php2shell-vulnerability-which-was-/1571864764968591/) | Moodle's own announcement that it took its public-facing sites offline as a precaution |
 | [Wikipedia: PHP2Shell](https://en.wikipedia.org/wiki/PHP2Shell) | A live overview that tracks developments beyond this page |
 
 ## Corrections

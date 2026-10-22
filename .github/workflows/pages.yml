@@ -22,9 +22,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Verify the site
+        run: python3 tools/check.py
+
+      - name: Stage the publishable files
+        run: |
+          mkdir -p _site/data
+          cp index.html styles.css main.js .nojekyll _site/
+          cp data/status.json _site/data/
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v4

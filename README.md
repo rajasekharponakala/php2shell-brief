@@ -18,10 +18,11 @@ Volatile values live in [`data/status.json`](data/status.json):
 
 | Key | What it drives |
 | --- | --- |
-| `lastUpdated` | The "as of" timestamp in the hero |
-| `severity`, `cvss`, `cvssVector`, `affectedFrom` | The severity chips in the hero |
-| `fixedVersions` | The fixed-version table in "Which versions are affected" |
-| `cves` | The two CVE summaries |
+| `lastUpdated` | The "as of" timestamp in the hero and the footer |
+| `severity`, `cvss`, `cvssVector`, `affectedFrom` | The severity chips and the severity line |
+| `fixedVersions` | The fixed-version table and the "Fixed in …" line |
+| `cves` | The two CVE summaries in "Root cause" |
+| `ai` | The "How it was found" status tile |
 | `exploitation` | The exploitation timeline in "Status right now" |
 | `offlineServices` | The "Services taken offline" cards |
 | `advisories` | The "Official advisories" cards |
@@ -33,19 +34,24 @@ changes meaning — the root-cause explanation, the mitigations — lives in
 `SOURCES.md`.
 
 `lastUpdated` is a UTC ISO-8601 timestamp. The page renders it as
-`as of YYYY-MM-DD HH:MM UTC`.
+`as of YYYY-MM-DD HH:MM UTC`. The `<noscript>` fallback in the hero repeats the
+severity and the fixed versions, and `tools/check.py` fails if that fallback
+drifts away from `status.json` — so no number can live in two places without the
+check catching it.
 
 ## Verify before pushing
 
 ```bash
-python3 tools/check.py          # structure, data shape, anchors
+python3 tools/check.py          # structure, data shape, anchors, contrast
 python3 tools/check.py --online # also HEAD-checks every external link
 ```
 
-The script exits non-zero on any failure, so it works as a pre-push gate. It checks,
-among other things, that every fixed version listed in `status.json` is one of the
-four PHP actually shipped, that every in-page anchor resolves to a real section, and
-that the page loads no external assets.
+The script exits non-zero on any failure. It checks, among other things, that
+every fixed version listed in `status.json` is one of the four PHP actually
+shipped, that fixed versions are not hardcoded in prose, that every in-page
+anchor resolves to a real section, that the palette meets WCAG AA contrast, that
+the page states only attempts where the sources state only attempts, and that the
+page loads no external assets.
 
 ## Local preview
 
@@ -59,9 +65,11 @@ browsers block on `file://` URLs.
 
 ## Deploy
 
-Pushing to `main` runs `.github/workflows/pages.yml`, which uploads the repository
-root as a Pages artifact and deploys it. There is no build step: the site is the
-repository contents.
+Pushing to `main` runs `.github/workflows/pages.yml`. It verifies the site with
+`tools/check.py`, stages the publishable files (`index.html`, `styles.css`,
+`main.js`, `data/status.json`) into `_site/`, and deploys that directory. Nothing
+else in the repository is published — the design spec, the plan and the check
+script stay private to the repository.
 
 ## Licence
 

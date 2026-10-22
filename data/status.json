@@ -1,9 +1,14 @@
 {
-  "lastUpdated": "2026-10-22T00:00:00Z",
+  "lastUpdated": "2026-10-22T12:40:00Z",
   "severity": "Critical",
   "cvss": "9.2",
   "cvssVector": "CVSS v4.0",
   "affectedFrom": "5.4",
+  "ai": {
+    "value": "Frontier AI",
+    "detail": "Calif found the first paths with GPT-5.6 Sol; Wiz Research found them independently with Wiz Atlas, Gemini 4 Argon and GPT-5.6 Sol.",
+    "source": "https://www.wiz.io/blog/php2shell-php-rce"
+  },
   "fixedVersions": [
     {"branch": "8.5", "version": "8.5.12", "eol": "not scheduled"},
     {"branch": "8.4", "version": "8.4.27", "eol": "not scheduled"},
@@ -28,7 +33,7 @@
     "observed": true,
     "summary": "Attempts confirmed by watchTowr, Cloudflare and Amazon; CISA had not observed exploitation when it published its alert.",
     "events": [
-      {"when": "2026-10-17", "what": "Amazon reports exploit attempts against its properties, four days before public disclosure.", "source": "https://thehackernews.com/2026/10/someone-tried-to-exploit-php2shell-4.html"},
+      {"when": "2026-10-17", "what": "Amazon reports exploit attempts against its honeypot service, four days before public disclosure.", "source": "https://thehackernews.com/2026/10/someone-tried-to-exploit-php2shell-4.html"},
       {"when": "2026-10-20", "what": "CVE identifiers and a proof-of-concept tool circulate publicly before the coordinated disclosure.", "source": "https://watchtowr.com/intelligence/php-remote-code-execution-php2shell/"},
       {"when": "2026-10-21", "what": "Cloudflare sees thousands of attempts in the ten hours before the announcement, tens of thousands within 45 minutes after, hundreds of thousands within two hours, and millions from there on.", "source": "https://www.bbc.com/news/articles/c3qjnwye0ep5o"}
     ]
