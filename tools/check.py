@@ -148,6 +148,10 @@ def check_markup(collector):
         fail("index.html must state the CVSS score 9.2")
     if "CVSS" not in body:
         fail("index.html must name the CVSS version the score comes from")
+    if "data-copy" not in INDEX.read_text():
+        fail("index.html has no data-copy element, copy-to-clipboard is unused")
+    if "initCopyButtons" not in (ROOT / "main.js").read_text():
+        fail("main.js has no copy-to-clipboard handler for the data-copy element")
     external = [
         link for link in collector.links
         if link.startswith("http://") or link.startswith("https://")

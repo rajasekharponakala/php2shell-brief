@@ -268,7 +268,11 @@
     </ul>
 
     <h3>Worked example</h3>
-    <code class="code">; php.ini — FPM pool or server level, not .user.ini
+    <code class="code" data-copy="session.upload_progress.enabled = 0
+post_max_size = 8M
+upload_max_filesize = 2M
+memory_limit = -1
+fatal_error_backtraces = 0">; php.ini — FPM pool or server level, not .user.ini
 session.upload_progress.enabled = 0
 post_max_size = 8M
 upload_max_filesize = 2M

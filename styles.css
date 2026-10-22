@@ -302,6 +302,20 @@ body {
 .figure figcaption { color: var(--faint); font-size: 0.85rem; margin-top: 0.75rem; }
 .figure svg { width: 100%; height: auto; }
 
+.is-copyable { cursor: pointer; position: relative; }
+.is-copyable::after {
+  content: "click to copy";
+  position: absolute;
+  top: 0.6rem;
+  right: 0.8rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.is-copied::after { content: "copied"; color: var(--ok); }
+
 @media (max-width: 700px) {
   body { font-size: 16px; }
   .masthead__inner { padding-top: 3rem; }

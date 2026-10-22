@@ -158,6 +158,49 @@
     body.appendChild(list);
   }
 
+  function initNavHighlight() {
+    var links = Array.prototype.slice.call(
+      document.querySelectorAll(".nav__list a[href^='#']")
+    );
+    if (!links.length || !("IntersectionObserver" in window)) { return; }
+    var byId = {};
+    links.forEach(function (link) {
+      byId[link.getAttribute("href").slice(1)] = link;
+    });
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var link = byId[entry.target.id];
+        if (!link) { return; }
+        if (entry.isIntersecting) {
+          links.forEach(function (other) { other.removeAttribute("aria-current"); });
+          link.setAttribute("aria-current", "true");
+        }
+      });
+    }, { rootMargin: "-45% 0px -50% 0px", threshold: 0 });
+    Object.keys(byId).forEach(function (id) {
+      var section = document.getElementById(id);
+      if (section) { observer.observe(section); }
+    });
+  }
+
+  function initCopyButtons() {
+    var targets = document.querySelectorAll("[data-copy]");
+    Array.prototype.forEach.call(targets, function (target) {
+      target.classList.add("is-copyable");
+      target.setAttribute("tabindex", "0");
+      target.setAttribute("role", "button");
+      target.addEventListener("click", function () {
+        var text = target.getAttribute("data-copy") || target.textContent.trim();
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () {
+            target.classList.add("is-copied");
+            setTimeout(function () { target.classList.remove("is-copied"); }, 1400);
+          });
+        }
+      });
+    });
+  }
+
   window.renderStatus = function (data) {
     renderTimestamp(data);
     renderSeverity(data);
@@ -170,6 +213,8 @@
   };
 
   function start() {
+    initNavHighlight();
+    initCopyButtons();
     fetch("data/status.json", { cache: "no-cache" })
       .then(function (response) {
         if (!response.ok) { throw new Error("HTTP " + response.status); }
