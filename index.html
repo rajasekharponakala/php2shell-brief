@@ -57,6 +57,8 @@
 <main id="main">
   <section id="status" class="section">
     <h2 class="section__title">Status right now</h2>
+    <p class="lead">Both flaws are rated Critical, CVSS v4.0 9.2. The fix is out. What
+      remains is the patch wave, and the exploitation that followed the disclosure.</p>
     <div data-status-exploitation></div>
     <h3>Services taken offline</h3>
     <div data-status-offline></div>
@@ -306,14 +308,102 @@ fatal_error_backtraces = 0
 
   <section id="ai-inflection" class="section">
     <h2 class="section__title">The AI inflection point</h2>
+    <p class="lead">The bugs had been in the codebase for over a decade. What changed was
+      that frontier models could chain them into a working exploit.</p>
+    <p>The underlying faults were old: a memory-limit remote vulnerability class first
+      described in 2004, an out-of-memory bug reported in 2020, and the same problem
+      rediscovered in a 2024 audit where exploitation was theorised but not proven, so
+      it was not fixed. Turning those faults into an exploit meant chaining several
+      bugs and adapting to how each target's memory is laid out — work that had sat
+      at the edge of what a human team could practically achieve.</p>
+    <p>Frontier models removed that barrier. Calif found the first paths while auditing
+      PHP through OpenAI's Patch the Planet programme, using GPT-5.6 Sol. Wiz Research
+      found them independently with Wiz Atlas, Gemini 4 Argon and GPT-5.6 Sol, and
+      credited Gemini 4 Argon with a decisive contribution to finding the flaw, building
+      the exploit, detecting attacks and validating the patch. OpenAI had also reported
+      the same root cause on its own.</p>
+    <p>Wiz's framing is the one worth holding: one researcher with the right tooling
+      completed in a week what would previously have taken a world-class team months.
+      Complexity, they argue, is no longer a meaningful barrier — which changes the
+      practical economics of what counts as exploitable.</p>
+    <p>The same capabilities cut both ways. watchTowr reported active exploitation
+      attempts against both CVEs, Cloudflare saw attempt volume climb into the
+      millions within hours of disclosure, and OpenAI notes that the same tools help
+      attackers build offensive tooling rapidly. OpenAI is funding $1 billion in
+      subsidised access to its Daybreak models for organisations with limited security
+      resources, and published a PHP version checker as a Codex skill.</p>
   </section>
 
   <section id="disclosure" class="section">
     <h2 class="section__title">How the disclosure went</h2>
+    <p class="lead">It did not go as planned. This part explains why the timeline looks
+      compressed and why some vendor mitigations shipped before the patch did.</p>
+    <p>The coordinated plan was a pre-announcement on 20 October, then a release on
+      21 October at 14:00 UTC. Instead, the CVE identifiers and a wrong release time
+      began circulating around 15:00 UTC that day, together with a CVSS score of 10.0
+      — the real score is 9.2. No technical details leaked in the first wave. The PHP
+      project pulled its pre-announcement forward to 19:30 UTC and moved the release up
+      a day to 21 October, a compromise between acting quickly and giving distributors
+      time to package the fix.</p>
+    <p>Two things then made it worse. Calif, one of the firms that had reported the
+      issues, mistakenly published a video showing its proof of concept against several
+      targets; copies circulated and accelerated proof-of-concept development. And on
+      21 October at 07:41 UTC, more than six hours before the coordinated release,
+      Chainguard published container images that already contained the fix — which let
+      anyone study the patch in binary form while every other PHP user was still
+      waiting. The PHP security team said it did not find a functional exploit among
+      the proof-of-concept material it inspected before release.</p>
+    <p>The PHP Foundation's own account of the fix is unusually blunt, and worth
+      reading in full. A PHP core developer found early signs of the out-of-memory
+      problem while fixing an audit finding in 2024. The security team developed several
+      candidate fixes, each carrying compatibility breaks, new denial-of-service risk,
+      or changes that would require coordinating across the extension ecosystem. With
+      no known path to remote code execution and a very small team of people who know
+      the engine deeply, the decision stalled and restarted repeatedly over months.
+      The Foundation calls the delay a structural failure caused by its own decision
+      process and a lack of resources.</p>
+    <p>It has since built out: an Ecosystem Security Team in May 2026, an AI Security
+      Engineer in Residence, dedicated triage and hardening hires through the summer,
+      scans with Anthropic's Claude Mythos through Alpha-Omega, and OpenAI's Daybreak
+      Red for validating reports. The security team published 15 CVEs since 1 July and
+      worked through more than 100 reports that turned out to be invalid, duplicate or
+      not reproducible. The Foundation is now asking organisations that depend on PHP
+      to fund the security work that makes the next one of these finish sooner.</p>
   </section>
 
   <section id="sources" class="section">
     <h2 class="section__title">Sources</h2>
+    <p>Every claim on this page traces to one of these. Where a source is dated, the
+      facts may have moved on since.</p>
+
+    <h3>Primary vendor and maintainer sources</h3>
+    <ul>
+      <li><a href="https://www.php.net/archive/2026.php#2026-10-21-5" rel="noopener noreferrer">PHP security advisory: critical remote code execution vulnerabilities</a> — fixed versions, affected SAPIs, interim mitigations.</li>
+      <li><a href="https://thephp.foundation/blog/2026/10/21/todays-php-security-release-and-how-were-strengthening-php-security/" rel="noopener noreferrer">PHP Foundation: today's PHP security release</a> — the fix history, the disclosure leak, the security organisation rebuild.</li>
+      <li><a href="https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w" rel="noopener noreferrer">php-src advisory GHSA-w8hw-w9fx-j79w (CVE-2026-109618)</a> and <a href="https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp" rel="noopener noreferrer">GHSA-6wmf-4rv5-p3rp (CVE-2026-109619)</a> — technical detail.</li>
+      <li><a href="https://openai.com/index/coordinated-disclosure-of-critical-vulnerabilities" rel="noopener noreferrer">OpenAI: global response coordination</a> — the response framework, Daybreak funding, the Defender's Window framing, and the PHP version checker.</li>
+    </ul>
+
+    <h3>Independent research</h3>
+    <ul>
+      <li><a href="https://www.wiz.io/blog/php2shell-php-rce" rel="noopener noreferrer">Wiz Research: PHP2Shell</a> — the four exploited bugs, the AI inflection point, the disclosure timeline.</li>
+      <li><a href="https://calif.io/php2shell/" rel="noopener noreferrer">Calif Research: a tale of two PHP remote vulnerabilities</a> — the full technical write-up and the 2004-to-2026 history.</li>
+      <li><a href="https://blog.cloudflare.com/php-vulnerabilities-waf-protection/" rel="noopener noreferrer">Cloudflare: WAF protections for php2shell</a> — deployment timings and managed rule sets.</li>
+      <li><a href="https://watchtowr.com/intelligence/php-remote-code-execution-php2shell/" rel="noopener noreferrer">watchTowr: PHP remote code execution intelligence</a> — exploitation observations and the incident timeline.</li>
+    </ul>
+
+    <h3>Government and agency advisories</h3>
+    <ul>
+      <li><a href="https://www.ncsc.gov.uk/news/critical-security-issue-affecting-php" rel="noopener noreferrer">UK NCSC: critical security issue affecting PHP</a> — priority actions, including the compromise check and taking systems offline.</li>
+      <li><a href="https://www.cisa.gov/news-events/alerts/2026/10/21/critical-vulnerabilities-php-require-immediate-patching" rel="noopener noreferrer">US CISA: critical vulnerabilities in PHP require immediate patching</a> — inventory, prioritisation and hunting guidance.</li>
+      <li><a href="https://www.nsa.gov/Press-Room/Press-Releases-Statements/Press-Release-View/Article/4630238/nsa-advisory-php-updates/" rel="noopener noreferrer">NSA: advisory on PHP updates</a> — take systems offline if they cannot be patched immediately.</li>
+    </ul>
+
+    <h3>Reporting</h3>
+    <ul>
+      <li><a href="https://www.bbc.com/news/articles/c3qjnwye0ep5o" rel="noopener noreferrer">BBC News: what is PHP and why did it spark a global cyber-security scramble?</a> — the global response, sites taken offline and the exploitation volume.</li>
+      <li><a href="https://en.wikipedia.org/wiki/PHP2Shell" rel="noopener noreferrer">Wikipedia: PHP2Shell</a> — a live overview that tracks the situation further than this page does.</li>
+    </ul>
   </section>
 </main>
 

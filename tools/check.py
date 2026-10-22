@@ -144,6 +144,10 @@ def check_markup(collector):
     for phrase in required_phrases:
         if phrase not in body:
             fail(f"index.html missing required phrase: {phrase}")
+    if "9.2" not in body:
+        fail("index.html must state the CVSS score 9.2")
+    if "CVSS" not in body:
+        fail("index.html must name the CVSS version the score comes from")
     external = [
         link for link in collector.links
         if link.startswith("http://") or link.startswith("https://")
