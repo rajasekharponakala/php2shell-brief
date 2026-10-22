@@ -29,14 +29,14 @@ pages may change afterwards.
 | --- | --- |
 | [UK NCSC alert](https://www.ncsc.gov.uk/news/critical-security-issue-affecting-php) | Priority actions; checking for backdoors installed by an attacker; taking systems offline when patching is not possible |
 | [US CISA alert](https://www.cisa.gov/news-events/alerts/2026/10/21/critical-vulnerabilities-php-require-immediate-patching) | Immediate patching; taking PHP-based systems offline; WAF as interim protection; hunting for PHP workers launching shells or downloading tools; "not observed exploitation as of publication" |
-| [NSA advisory](https://www.nsa.gov/Press-Room/Press-Releases-Statements/Press-Release-View/Article/4630238/nsa-advisory-php-updates/) | Take PHP systems offline if they cannot be patched immediately; the flaw as a direct path to the database; heightened awareness in the coming weeks |
+| [NSA advisory](https://www.nsa.gov/Press-Room/Press-Releases-Statements/Press-Release-View/Article/4630238/nsa-advisory-critical-patches-recommended-for-php-vulnerabilities/) | Take PHP systems offline if they cannot be patched immediately; the flaw as a direct path to the database; heightened awareness in the coming weeks |
 
 ## Reporting
 
 | Source | What it supports |
 | --- | --- |
 | [BBC News](https://www.bbc.com/news/articles/c3qjnwye0ep5o) | The global response; named sites taken offline; the Cloudflare attempt-volume escalation; Amazon's pre-disclosure attempts; the scale of affected sites |
-| [Sophos advisory](https://www.sophos.com/en-us/security-advisories/sophos-sa-20261021-php2shell) | Amazon Threat Intelligence's exploitation attempt on 17 October 2026, before disclosure |
+| [The Hacker News](https://thehackernews.com/2026/10/someone-tried-to-exploit-php2shell-4.html) | Amazon's exploitation attempt on 17 October 2026, four days before public disclosure |
 | [Wikipedia: PHP2Shell](https://en.wikipedia.org/wiki/PHP2Shell) | A live overview that tracks developments beyond this page |
 
 ## Corrections
