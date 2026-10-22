@@ -188,6 +188,13 @@ body {
   margin: 2.5rem 0 1rem;
   color: var(--text);
 }
+.section h2, .section h3 { scroll-margin-top: 5rem; }
+
+:where(a, button, [tabindex]):focus-visible {
+  outline: 2px solid var(--alert);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
 .section p { max-width: var(--measure); color: var(--muted); }
 .section p.lead { color: var(--text); font-size: 1.05rem; }
 .section a { color: var(--text); }
@@ -321,4 +328,12 @@ body {
   .masthead__inner { padding-top: 3rem; }
   .section { padding: 2.5rem var(--step); }
   .timeline li, .timeline--full li { grid-template-columns: 1fr; gap: 0.15rem; }
+  .nav__inner { padding: 0.5rem var(--step); }
+  .nav__list { gap: 0.9rem; }
+  .masthead__cta .button { width: 100%; text-align: center; }
+  .cards { grid-template-columns: 1fr; }
+  .figure { overflow-x: auto; }
+  .figure svg { min-width: 640px; }
+  .table-wrap { overflow-x: auto; }
+  .table { min-width: 26rem; }
 }

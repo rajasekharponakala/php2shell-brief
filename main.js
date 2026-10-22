@@ -71,7 +71,9 @@
       bodyEl.appendChild(tr);
     });
     table.appendChild(bodyEl);
-    body.appendChild(table);
+    var wrap = el("div", "table-wrap");
+    wrap.appendChild(table);
+    body.appendChild(wrap);
   }
 
   function renderExploitation(data) {

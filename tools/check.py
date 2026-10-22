@@ -117,6 +117,18 @@ def check_hooks():
             fail(f"index.html missing render hook: {hook}")
 
 
+def check_styles():
+    """Stylesheet rules the page depends on."""
+    css = ROOT / "styles.css"
+    if not css.exists():
+        return
+    source = css.read_text()
+    if ":focus-visible" not in source:
+        fail("styles.css has no :focus-visible styles")
+    if "scroll-margin-top" not in source:
+        fail("styles.css has no scroll-margin-top, headings can hide under the sticky nav")
+
+
 def check_markup(collector):
     for section in REQUIRED_SECTIONS:
         if section not in collector.ids:
@@ -193,6 +205,7 @@ def main():
     check_status()
     check_renderer()
     check_hooks()
+    check_styles()
     collector = Collector()
     if INDEX.exists():
         collector.feed(INDEX.read_text())
