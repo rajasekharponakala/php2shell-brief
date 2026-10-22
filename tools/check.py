@@ -71,6 +71,9 @@ def check_files():
     for path in (INDEX, STATUS, ROOT / "styles.css", ROOT / "main.js"):
         if not path.exists():
             fail(f"missing required file: {path.relative_to(ROOT)}")
+    for name in ("README.md", "SOURCES.md"):
+        if not (ROOT / name).exists():
+            fail(f"missing required file: {name}")
     if (ROOT / ".nojekyll").exists():
         if (ROOT / ".nojekyll").read_text().strip():
             fail(".nojekyll must be empty")
